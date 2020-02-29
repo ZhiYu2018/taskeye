@@ -30,7 +30,11 @@ public class Backoff {
         long curTime = startTime + nextBackOffMillis(times);
         boolean over = (curTime <= System.currentTimeMillis());
         if(over){
-            times = times + 1;
+            if((curTime - startTime) >= MAX_INTERVAL){
+                times = 0;
+            }else {
+                times = times + 1;
+            }
             startTime = curTime;
         }
         return over;
