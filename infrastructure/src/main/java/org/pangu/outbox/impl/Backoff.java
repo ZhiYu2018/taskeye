@@ -1,7 +1,7 @@
 package org.pangu.outbox.impl;
 
 public class Backoff {
-    private static final long MAX_INTERVAL = 10*6000*1000L;
+    private static final long MAX_INTERVAL = 5*6000*1000L;
     private static final double DEFAULT_MULTIPLIER = 1.5D;
     private static double	DEFAULT_RANDOMIZATION_FACTOR = 0.5D;
     public static final Backoff defaultBackOff = new Backoff(1000, MAX_INTERVAL);
