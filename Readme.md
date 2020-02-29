@@ -42,3 +42,37 @@ task:
    url:    
 ```
 
+## 添加任务
+
+```javascript
+POST 127.0.0.1:8090/rest/task
+{
+	"flowId": "1456987",
+	"appId": "Teana",
+	"data":{
+		"appId": "Teana",
+		"taskName": "Per 40 two",
+		"timeExpr": "/40 * * * * ?",
+		"delay": 5
+	}
+}
+```
+
+
+
+## git 命令
+
+```
+----------------------------------------
+echo "# taskeye" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin https://github.com/ZhiYu2018/taskeye.git
+git push -u origin master
+--------------------------------------------
+…or push an existing repository from the command line
+git remote add origin https://github.com/ZhiYu2018/taskeye.git
+git push -u origin master
+```
+
