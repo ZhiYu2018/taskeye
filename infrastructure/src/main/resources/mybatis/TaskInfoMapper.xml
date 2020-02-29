@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+       Copyright 2015-2019 the original author or authors.
+       Licensed under the Apache License, Version 2.0 (the "License");
+       you may not use this file except in compliance with the License.
+       You may obtain a copy of the License at
+          http://www.apache.org/licenses/LICENSE-2.0
+       Unless required by applicable law or agreed to in writing, software
+       distributed under the License is distributed on an "AS IS" BASIS,
+       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+       See the License for the specific language governing permissions and
+       limitations under the License.
+-->
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.pangu.db.TaskInfoMapper">
+    <resultMap type="TaskInfoDo" id="TaskDto">
+		<id column="id" property="Id"/>
+		<result column="app_id" property="appId"/>
+		<result column="status" property="status"/>
+		<result column="job_name" property="jobName"/>
+		<result column="time_expr" property="timeExpr"/>
+		<result column="job_flag" property="jobFlag"/>
+		<result column="time_delay" property="timeDelay"/>
+		<result column="time_used" property="timeUsed"/>
+		<result column="time_out_times" property="timeOutTimes"/>
+		<result column="trig_exec_times" property="trigExecTimes"/>
+		<result column="last_exec_times" property="lastExecTimes"/>
+		<result column="failed_times" property="failedTimes"/>
+		<result column="next_time" property="nextTime"/>
+		<result column="job_optId" property="jobOptId"/>
+	</resultMap>
+	<sql id="ALL_COLUMNS">
+        id,app_id,status,job_name,time_expr,job_flag,time_delay,time_used,
+        time_out_times,trig_exec_times,last_exec_times,failed_times,next_time,job_optId
+    </sql>
+	
+	<insert id="add" parameterType="TaskInfoDo">
+		INSERT INTO  job_info(<include refid="ALL_COLUMNS"/>)  
+		VALUES (NULL, #{dto.appId}, #{dto.status}, #{dto.jobName}, #{dto.timeExpr}, #{dto.jobFlag}, #{dto.timeDelay}, #{dto.timeUsed}, #{dto.timeOutTimes}, 
+		        #{dto.trigExecTimes}, #{dto.lastExecTimes}, #{dto.failedTimes}, #{dto.nextTime}, #{dto.jobOptId})
+	</insert>
+	<update id="updateTaskInfo" parameterType="TaskInfoDo">
+		UPDATE job_info SET  
+		   <if test="dto.timeExpr != null"> 
+				time_expr = #{dto.timeExpr}, 
+		   </if>
+		   <if test="dto.nextTime != null"> 
+				next_time = #{dto.nextTime}, 
+		   </if>	
+		   <if test="dto.timeDelay != null"> 
+				time_delay = #{dto.timeDelay}, 
+		   </if>
+           status = #{dto.status}		   
+		   WHERE app_id = #{dto.appId} AND job_name = #{dto.jobName}
+	</update>
+	<update id="updateRunStatus" parameterType="TaskInfoDo">
+		UPDATE job_info SET  
+			trig_exec_times = trig_exec_times + #{dto.trigExecTimes},
+			job_flag = #{dto.jobFlag},
+			job_optId = #{dto.jobOptId}
+			WHERE app_id = #{dto.appId} AND job_name = #{dto.jobName} AND job_optId <![CDATA[ < ]]> #{dto.jobOptId} 
+	</update>
+	<update id="updateEndStatus" parameterType="TaskInfoDo">
+		UPDATE job_info SET  
+			failed_times = failed_times + #{dto.failedTimes},
+			job_flag = #{dto.jobFlag},
+			next_time = #{dto.nextTime}
+			WHERE app_id = #{dto.appId} AND job_name = #{dto.jobName} AND job_optId = #{dto.jobOptId} 	
+	</update>
+	<update id="updateTimeOutStatus" parameterType="TaskInfoDo">
+		UPDATE job_info SET
+            job_flag = #{dto.jobFlag},	
+			time_out_times = time_out_times + #{dto.timeOutTimes},
+			last_exec_times = trig_exec_times,
+			next_time = #{dto.nextTime}
+			WHERE app_id = #{dto.appId} AND job_name = #{dto.jobName} AND trig_exec_times = #{dto.trigExecTimes}
+	</update>
+    <select id="queryByName" resultMap="TaskDto">
+		SELECT <include refid="ALL_COLUMNS"/> FROM job_info WHERE app_id = #{appId} AND job_name = #{name}
+	</select>
+    <select id="countByName" resultMap="TaskDto">
+		SELECT count(1) as cnt FROM job_info WHERE app_id = #{dto.appId} AND job_name = #{name}
+	</select>
+	<select id="getTimeOutTask" resultMap="TaskDto">
+		SELECT <include refid="ALL_COLUMNS"/> FROM job_info WHERE next_time <![CDATA[ >= ]]> #{lastTime} AND next_time <![CDATA[ < ]]> NOW() AND id > #{skipId} ORDER BY id LIMIT 1000
+	</select>
+</mapper>		

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+       Copyright 2015-2019 the original author or authors.
+       Licensed under the Apache License, Version 2.0 (the "License");
+       you may not use this file except in compliance with the License.
+       You may obtain a copy of the License at
+          http://www.apache.org/licenses/LICENSE-2.0
+       Unless required by applicable law or agreed to in writing, software
+       distributed under the License is distributed on an "AS IS" BASIS,
+       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+       See the License for the specific language governing permissions and
+       limitations under the License.
+-->
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.pangu.db.TimerLockMapper">
+	<resultMap type="TimerLockDo" id="TLockDto">
+		<result column="app_id" property="appId"/>
+		<result column="lock_name" property="name"/>
+		<result column="lock_owner" property="owner"/>
+		<result column="lock_status" property="status"/>
+	</resultMap>
+	<sql id="ALL_COLUMNS">
+		app_id,lock_name,lock_owner,lock_status
+    </sql>
+	<select id="queryLock" resultMap="TLockDto">
+		SELECT <include refid="ALL_COLUMNS"/> FROM timer_lock WHERE app_id = #{appId} AND lock_name = #{name}
+	</select>
+	<insert id="insertLock" parameterType="TimerLockDo">
+	INSERT INTO  timer_lock(
+            <include refid="ALL_COLUMNS"/>
+        ) VALUES (#{dto.appId}, #{dto.name}, #{dto.owner}, #{dto.status})
+	</insert>
+	<update id="tryLock" parameterType="TimerLockDo">
+		UPDATE timer_lock SET lock_status = 2, lock_owner = #{dto.owner}, update_time = NOW() 
+		 WHERE app_id = #{dto.appId} AND lock_name = #{dto.name} AND lock_status = 1
+	</update>
+	<update id="tryUnlock" parameterType="TimerLockDo">
+		UPDATE timer_lock SET lock_status = 1, lock_owner = #{dto.owner}, update_time = NOW()  
+		 WHERE app_id = #{dto.appId} AND lock_name = #{dto.name} AND lock_status = 2 AND lock_owner = #{dto.owner}
+	</update>	
+</mapper>		

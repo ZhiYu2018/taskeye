@@ -1,0 +1,8 @@
+app: 
+ name: batch_job
+info:   
+ app: 
+  encoding: UTF-8
+task: 
+ eye: 
+  url: http://127.0.0.1:8090 
