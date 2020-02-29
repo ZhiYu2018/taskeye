@@ -13,7 +13,7 @@ public class Backoff {
     private volatile long startTime;
 
     public Backoff(){
-        this(5000, MAX_INTERVAL);
+        this(1000, MAX_INTERVAL);
     }
 
     public Backoff(long interval, long maxInterval){
